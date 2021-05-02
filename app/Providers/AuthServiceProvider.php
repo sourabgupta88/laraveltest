@@ -4,6 +4,9 @@ namespace App\Providers;
 
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Auth\Access\Response;
+use App\Models\User;
+
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -13,8 +16,10 @@ class AuthServiceProvider extends ServiceProvider
      * @var array
      */
     protected $policies = [
-        // 'App\Models\Model' => 'App\Policies\ModelPolicy',
+        // 'App\Model' => 'App\Policies\ModelPolicy',
     ];
+
+    protected $usersGateAuthenticateMessage = 'You must be an authorised to perform this action';
 
     /**
      * Register any authentication / authorization services.
@@ -23,8 +28,22 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        
         $this->registerPolicies();
 
-        //
+        Gate::define('createUser', function ($user) {
+
+            return $user->isAdmin()
+                ? Response::allow()
+                : Response::deny($this->usersGateAuthenticateMessage);
+        });
+
+        
+        Gate::define('createCustomer', function (User $user) {
+           return $user->isAdmin()
+                ? Response::allow()
+                : Response::deny($this->usersGateAuthenticateMessage);
+        });
+
     }
 }
